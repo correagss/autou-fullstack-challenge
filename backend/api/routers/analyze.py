@@ -1,20 +1,11 @@
-# backend/api/routers/analyze.py
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
-from pydantic import BaseModel, Field
 from typing import Optional
 from pypdf import PdfReader
-from services import nlp_service
+
+from api.services import nlp_service
+from api.models.analyze import AnalysisResponse
 
 router = APIRouter()
-
-class AnalysisResponse(BaseModel):
-    category: str
-    suggested_response: str = Field(alias="suggestedResponse")
-
-    class Config:
-        # Pydantic v2 mudou o nome desta configuração
-        populate_by_name = True
-        json_schema_extra = {"by_alias": True}
 
 
 @router.post("/analyze", response_model=AnalysisResponse, tags=["Análise"])
