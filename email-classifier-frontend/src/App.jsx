@@ -1,36 +1,59 @@
 // src/App.jsx
 import React, { useState } from 'react';
 import EmailForm from './components/EmailForm';
-import Results from './components/Results'; // 1. Importa a vitrine
+import Results from './components/Results';
 
 function App() {
   const [isLoading, setIsLoading] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState(null); // 2. Novo potinho de memória para o resultado
-  const [error, setError] = useState(''); // Potinho para erros
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const [error, setError] = useState('');
 
+  // --- A NOVA E PODEROSA FUNÇÃO handleAnalyze ---
   const handleAnalyze = async ({ text, file }) => {
     setIsLoading(true);
-    setAnalysisResult(null); // Limpa resultados antigos
-    setError(''); // Limpa erros antigos
+    setAnalysisResult(null);
+    setError('');
 
-    // Simulação de chamada de API (vamos substituir isso depois)
+    // FormData é a ferramenta perfeita para enviar tanto texto quanto arquivos
+    const formData = new FormData();
+
+    if (file) {
+      // Se tiver um arquivo, anexa-o ao formulário
+      formData.append('file', file);
+    } else if (text) {
+      // Se tiver texto, anexa-o ao formulário
+      formData.append('text', text);
+    } else {
+      // Se não tiver nenhum dos dois (embora o EmailForm já valide isso)
+      setError("Nenhum conteúdo para analisar.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      console.log("Analisando:", { text, file });
-      // Simula uma espera de 2 segundos
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Faz a chamada real para o nosso backend
+      // A URL está configurada para funcionar tanto localmente quanto no deploy
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        body: formData, // Envia os dados como FormData
+      });
 
-      // Simula um resultado de sucesso
-      const mockResult = {
-        category: 'Produtivo',
-        suggestedResponse: 'Olá! Recebemos sua solicitação e nossa equipe já está trabalhando nela. Entraremos em contato em breve com uma atualização. Atenciosamente, Equipe de Suporte.'
-      };
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Se a API retornar um erro (ex: 400), usa a mensagem de erro dela
+        throw new Error(data.detail || 'Ocorreu um erro na análise.');
+      }
       
-      setAnalysisResult(mockResult); // 3. Guarda o resultado no potinho de memória
+      // Guarda o resultado de sucesso na memória (estado)
+      setAnalysisResult(data);
 
     } catch (err) {
-      setError('Ocorreu um erro ao analisar o email. Tente novamente.');
+      // Se a chamada falhar (ex: rede, erro de JSON), mostra o erro
+      setError(err.message);
     } finally {
-      setIsLoading(false); // 4. Desliga a luz vermelha (aconteça o que acontecer)
+      // Aconteça o que acontecer, desliga o spinner de carregamento
+      setIsLoading(false);
     }
   };
 
@@ -49,10 +72,8 @@ function App() {
         <main>
           <EmailForm onAnalyze={handleAnalyze} isLoading={isLoading} />
           
-          {/* Mostra o erro, se houver */}
-          {error && <p className="text-red-500 text-center mt-4">{error}</p>}
+          {error && <p className="text-red-500 text-center mt-4 font-semibold">{error}</p>}
           
-          {/* 5. Coloca a vitrine aqui, passando o resultado */}
           <Results result={analysisResult} />
         </main>
       </div>
