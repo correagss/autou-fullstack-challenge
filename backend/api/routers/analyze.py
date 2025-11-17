@@ -1,6 +1,6 @@
 # backend/api/routers/analyze.py
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from pypdf import PdfReader
 from services import nlp_service
@@ -9,7 +9,13 @@ router = APIRouter()
 
 class AnalysisResponse(BaseModel):
     category: str
-    suggested_response: str
+    suggested_response: str = Field(alias="suggestedResponse")
+
+    class Config:
+        # Pydantic v2 mudou o nome desta configuração
+        populate_by_name = True
+        json_schema_extra = {"by_alias": True}
+
 
 @router.post("/analyze", response_model=AnalysisResponse, tags=["Análise"])
 async def analyze_email_route(text: Optional[str] = Form(None), file: Optional[UploadFile] = File(None)):
@@ -17,14 +23,13 @@ async def analyze_email_route(text: Optional[str] = Form(None), file: Optional[U
     if file:
         if file.content_type == 'text/plain':
             contents = await file.read()
-            email_content = contents.decode('utf-8')
+            email_content = contents.decode('utf-8', errors='ignore')
         elif file.content_type == 'application/pdf':
             try:
                 reader = PdfReader(file.file)
-                for page in reader.pages:
-                    email_content += page.extract_text() or ""
-            except Exception:
-                raise HTTPException(status_code=400, detail="Erro ao ler o arquivo PDF.")
+                email_content = " ".join([page.extract_text() or "" for page in reader.pages])
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=f"Erro ao ler o arquivo PDF: {e}")
         else:
             raise HTTPException(status_code=400, detail="Formato de arquivo não suportado (.txt ou .pdf).")
     elif text:
@@ -34,17 +39,15 @@ async def analyze_email_route(text: Optional[str] = Form(None), file: Optional[U
 
     if not email_content.strip():
         raise HTTPException(status_code=400, detail="O conteúdo do e-mail está vazio.")
-
+    
     try:
-        # Ordem das tarefas do especialista:
         processed_text = nlp_service.preprocess_text(email_content)
         category = nlp_service.classify_email(processed_text)
         
-        # --- A LINHA CORRIGIDA ---
-        suggested_response = nlp_service.generate_response(email_content, category)
+        # --- A CHAMADA CORRETA ---
+        suggested_response = nlp_service.generate_response(category=category)
         
         return AnalysisResponse(category=category, suggested_response=suggested_response)
     
     except Exception as e:
-        # Se qualquer passo falhar, retorna um erro claro
         raise HTTPException(status_code=500, detail=str(e))

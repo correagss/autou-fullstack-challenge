@@ -65,9 +65,10 @@ def classify_email(text: str) -> str:
     except Exception as e:
         raise Exception(f"Falha ao se comunicar com a API da OpenAI: {e}")
 
-def generate_response(text: str, category: str) -> str:
-    """Gera uma resposta padrão."""
+# --- A FUNÇÃO CORRIGIDA ---
+def generate_response(category: str) -> str:
+    """Gera uma resposta padrão com base na categoria."""
     if category == 'Produtivo':
-        return "Olá! Recebemos sua mensagem e já estamos analisando sua solicitação. Entraremos em contato em breve. Atenciosamente."
+        return "Olá! Recebemos sua mensagem e já estamos analisando sua solicitação. Entraremos em contato em breve com mais informações. Atenciosamente."
     else: 
         return "Obrigado por sua mensagem! Ela foi recebida e arquivada. Nenhuma ação é necessária no momento."
