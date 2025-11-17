@@ -6,11 +6,6 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from openai import OpenAI
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-if not OPENAI_API_KEY:
-    raise ValueError("Chave da API da OpenAI (OPENAI_API_KEY) não foi encontrada.")
-
 
 class ContentAnalyzer:
     """
@@ -24,6 +19,11 @@ class ContentAnalyzer:
         """
         Inicializa cliente OpenAI e componentes do NLTK.
         """
+        OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+        if not OPENAI_API_KEY:
+            raise ValueError("Chave da API da OpenAI (OPENAI_API_KEY) não foi encontrada.")
+
         self.client = OpenAI(api_key=OPENAI_API_KEY)
 
         try:
