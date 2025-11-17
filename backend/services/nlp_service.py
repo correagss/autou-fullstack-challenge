@@ -1,56 +1,73 @@
 # backend/services/nlp_service.py
 import os
 import re
-import requests
 from dotenv import load_dotenv
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
+from openai import OpenAI
 
-# Configuração
+# --- CONFIGURAÇÃO E CARREGAMENTO ---
 load_dotenv()
-HF_TOKEN = os.getenv("HF_TOKEN")
-if not HF_TOKEN:
-    raise ValueError("Token do Hugging Face (HF_TOKEN) não foi encontrado. ")
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    raise ValueError("Chave da API da OpenAI (OPENAI_API_KEY) não foi encontrada.")
+
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 try:
-    stop_words = set(stopwords.words("portuguese") + stopwords.words("english"))
+    stop_words = set(stopwords.words('portuguese') + stopwords.words('english'))
     lemmatizer = WordNetLemmatizer()
 except LookupError:
-    print("ERRO: Pacotes NLTK não encontrados. Rode o script de download.")
+    print("ERRO: Pacotes NLTK não encontrados.")
     exit()
 
-MODEL = "facebook/bart-large-mnli"
-API_URL = f"https://api-inference.huggingface.co/models/{MODEL}"
-HEADERS = {"Authorization": f"Bearer {HF_TOKEN}"}
-
-
-# Funções 
+# --- PRÉ-PROCESSAMENTO ---
 def preprocess_text(text: str) -> str:
-    text = re.sub(r"[^a-zA-Z\s]", "", text.lower())
+    text = re.sub(r'[^a-zA-Z\s]', '', text.lower())
     tokens = word_tokenize(text)
     lemmatized = [lemmatizer.lemmatize(word) for word in tokens if word not in stop_words and len(word) > 2]
     return " ".join(lemmatized)
 
-def classify_email_via_api(text: str) -> str:
-    # Chamando a API
-    payload = {
-        "inputs": text,
-        "parameters": {"candidate_labels": ["Produtivo", "Improdutivo"], "options": {"wait_for_model": True}},
-    }
+# --- FUNÇÕES DE IA COM OPENAI ---
+def classify_email(text: str) -> str:
+    """Classifica o texto usando o modelo GPT da OpenAI."""
+    prompt = f"""
+    Analise o seguinte texto de um e-mail e classifique-o como 'Produtivo' ou 'Improdutivo'.
+    'Produtivo' significa que o e-mail requer uma ação ou resposta.
+    'Improdutivo' significa que é um e-mail informativo, social ou que pode ser arquivado.
+    Responda APENAS com a palavra 'Produtivo' ou 'Improdutivo'.
+
+    Texto do E-mail:
+    ---
+    {text}
+    ---
+    Classificação:"""
+
     try:
-        response = requests.post(API_URL, headers=HEADERS, json=payload)
-        response.raise_for_status() 
-        data = response.json()
-        return data["labels"][0]
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "Você é um assistente de classificação de e-mails."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0,
+            max_tokens=5
+        )
+        category = response.choices[0].message.content.strip().capitalize()
+        
+        if category not in ['Produtivo', 'Improdutivo']:
+             return 'Improdutivo'
+             
+        return category
+        
     except Exception as e:
-        raise Exception(f"Falha na API de classificação: {e}")
+        raise Exception(f"Falha ao se comunicar com a API da OpenAI: {e}")
 
-
-# Retorna uma resposta padrão
-def get_suggested_response(category: str) -> str:
-
-    if category == "Produtivo":
+def generate_response(text: str, category: str) -> str:
+    """Gera uma resposta padrão."""
+    if category == 'Produtivo':
         return "Olá! Recebemos sua mensagem e já estamos analisando sua solicitação. Entraremos em contato em breve. Atenciosamente."
-    else:
+    else: 
         return "Obrigado por sua mensagem! Ela foi recebida e arquivada. Nenhuma ação é necessária no momento."

@@ -38,8 +38,10 @@ async def analyze_email_route(text: Optional[str] = Form(None), file: Optional[U
     try:
         # Ordem das tarefas do especialista:
         processed_text = nlp_service.preprocess_text(email_content)
-        category = nlp_service.classify_email_via_api(processed_text)
-        suggested_response = nlp_service.get_suggested_response(category)
+        category = nlp_service.classify_email(processed_text)
+        
+        # --- A LINHA CORRIGIDA ---
+        suggested_response = nlp_service.generate_response(email_content, category)
         
         return AnalysisResponse(category=category, suggested_response=suggested_response)
     
