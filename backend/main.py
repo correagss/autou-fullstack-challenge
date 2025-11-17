@@ -20,7 +20,7 @@ app.add_middleware(
 )
 
 # Usa as rotas da API
-app.include_router(analyze.router, prefix="/api")
-app.include_router(home.router, prefix="")
+app.include_router(analyze.router   , prefix="/api")
+app.include_router(home.router      , prefix="")
 
 

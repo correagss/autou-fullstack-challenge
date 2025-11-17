@@ -14,6 +14,7 @@ async def analyze_email_route(
     file: Optional[UploadFile] = File(None),
     classifier_service: ContentAnalyzer = Depends(ContentAnalyzer)
     ):
+    
     email_content = ""
     if file:
         if file.content_type == 'text/plain':
