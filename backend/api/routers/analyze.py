@@ -1,15 +1,20 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends
 from typing import Optional
 from pypdf import PdfReader
 
-from api.services import nlp_service
 from api.models.analyze import AnalysisResponse
+from api.services.nlp_service import ContentAnalyzer
 
 router = APIRouter()
 
 
 @router.post("/analyze", response_model=AnalysisResponse, tags=["Análise"])
-async def analyze_email_route(text: Optional[str] = Form(None), file: Optional[UploadFile] = File(None)):
+async def analyze_email_route(
+    text: Optional[str] = Form(None), 
+    file: Optional[UploadFile] = File(None),
+    classifier_service: ContentAnalyzer = Depends(ContentAnalyzer)
+    ):
+    
     email_content = ""
     if file:
         if file.content_type == 'text/plain':
@@ -32,11 +37,11 @@ async def analyze_email_route(text: Optional[str] = Form(None), file: Optional[U
         raise HTTPException(status_code=400, detail="O conteúdo do e-mail está vazio.")
     
     try:
-        processed_text = nlp_service.preprocess_text(email_content)
-        category = nlp_service.classify_email(processed_text)
+        processed_text = classifier_service.preprocess_text(email_content)
+        category = classifier_service.classify_email(processed_text)
         
         # --- A CHAMADA CORRETA ---
-        suggested_response = nlp_service.generate_response(category=category)
+        suggested_response = classifier_service.generate_response(category=category)
         
         return AnalysisResponse(category=category, suggested_response=suggested_response)
     

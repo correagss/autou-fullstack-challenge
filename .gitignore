@@ -1,0 +1,108 @@
+####################################
+# PYTHON
+####################################
+
+# Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+.venv/
+venv/
+ENV/
+env/
+*.env
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage
+.coverage
+.coverage.*
+.cache
+pytest_cache/
+htmlcov/
+nosetests.xml
+coverage.xml
+
+# Django / Flask / FastAPI specific (optional)
+instance/
+*.db
+*.sqlite3
+
+# Jupyter
+.ipynb_checkpoints
+
+# VSCode Python configs
+.vscode/**.py
+
+####################################
+# NODE / FRONTEND
+####################################
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+coverage/
+*.log
+
+# Vite / React / Next
+.vite/
+.next/
+.svelte-kit/
+
+# Package managers
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+####################################
+# OS FILES
+####################################
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# Linux
+*~
+
+####################################
+# EDITORS
+####################################
+
+# VS Code
+.vscode/
+.history/
+
+# IntelliJ / PyCharm
+.idea/
+*.iml
+
+####################################
+# LOGS & TEMP
+####################################
+
+*.log
+*.tmp
+*.temp
+*.pid
+
+####################################
+# DOCKER
+####################################
+
+docker-data/
+*.pid

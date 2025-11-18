@@ -2,6 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.routers import analyze
+from api.routers import home
 
 app = FastAPI(title="API de Análise de E-mails")
 
@@ -19,8 +20,7 @@ app.add_middleware(
 )
 
 # Usa as rotas da API
-app.include_router(analyze.router, prefix="/api")
+app.include_router(analyze.router   , prefix="/api")
+app.include_router(home.router      , prefix="")
 
-@app.get("/", tags=["Root"])
-def read_root():
-    return {"message": "API de Análise de E-mails está no ar!"}
+
