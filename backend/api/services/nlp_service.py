@@ -1,11 +1,13 @@
 # backend/services/nlp_service.py
 import os
 import re
+from dotenv import load_dotenv
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from openai import OpenAI
 
+load_dotenv()
 
 class ContentAnalyzer:
     """
