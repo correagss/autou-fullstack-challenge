@@ -26,7 +26,7 @@ function App() {
     }
 
     try {
-      const response = await fetch('/api/analyze', {
+      const response = await fetch('https://autou-fullstack-challenge.onrender.com/api/analyze', {
         method: 'POST',
         body: formData,
       });
