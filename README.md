@@ -2,11 +2,11 @@
 
 A Full-Stack web application for automated email classification, developed as a technical challenge for AutoU. The app uses AI to categorize emails and suggest appropriate responses.
 
-**Access the live application:** [**PASTE YOUR RENDER APP URL HERE**]
+**Access the live application:** [**https://autou-fullstack-challenge1.onrender.com/**]
 
 ---
 
-![Dashboard Screen](https://via.placeholder.com/800x450.png/1e1e1e/00aaff?text=Screenshot+of+Dashboard)
+
 *Main dashboard showing the AI analysis result.*
 
 ---
