@@ -3,12 +3,16 @@
 @tailwind utilities;
 
 
-
-:root {
+body {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  background-color: #111827;
+
+  background-image: url('/bg.jpg');  /* AGORA FUNCIONA */
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
-
-
 a {
   font-weight: 500;
   text-decoration: inherit;
@@ -17,9 +21,6 @@ a {
 button {
   cursor: pointer;
 }
-
-/* src/index.css */
-/* ADICIONE NO FINAL DO ARQUIVO */
 
 @keyframes fadeIn {
   from {
