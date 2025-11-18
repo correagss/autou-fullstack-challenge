@@ -1,6 +1,7 @@
 # backend/services/nlp_service.py
 import os
 import re
+import nltk 
 from dotenv import load_dotenv
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -19,7 +20,8 @@ class ContentAnalyzer:
 
     def __init__(self):
         """
-        Inicializa cliente OpenAI e componentes do NLTK.
+        Inicializa cliente OpenAI e componentes do NLTK,
+        realizando o download dos pacotes NLTK se necessário.
         """
         OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
@@ -28,11 +30,27 @@ class ContentAnalyzer:
 
         self.client = OpenAI(api_key=OPENAI_API_KEY)
 
+        # --- LÓGICA DE AUTODOWNLOAD DO NLTK ---
         try:
+            # Tenta carregar os recursos. Se funcionar, ótimo.
             self.stop_words = set(stopwords.words('portuguese') + stopwords.words('english'))
             self.lemmatizer = WordNetLemmatizer()
+            # Testamos também o 'punkt' que é usado pelo word_tokenize
+            word_tokenize('test')
         except LookupError:
-            print("ERRO: Pacotes NLTK não encontrados. Execute: nltk.download('all')")
+            # Se falhar, significa que os pacotes não estão disponíveis.
+            print("!! Pacotes NLTK não encontrados. Baixando agora... !!")
+            # Baixa todos os pacotes necessários de uma vez.
+            nltk.download('stopwords')
+            nltk.download('punkt')
+            nltk.download('wordnet')
+            nltk.download('omw-1.4')
+            print("✅ Downloads do NLTK concluídos. Recarregando recursos...")
+            
+            # Tenta carregar novamente após o download
+            self.stop_words = set(stopwords.words('portuguese') + stopwords.words('english'))
+            self.lemmatizer = WordNetLemmatizer()
+        # --- FIM DA LÓGICA DE AUTODOWNLOAD ---
 
     # -------------------------------------------------------------------------
     # PRÉ-PROCESSAMENTO
@@ -45,12 +63,6 @@ class ContentAnalyzer:
         - Tokeniza
         - Remove stop words
         - Lematiza tokens
-
-        Args:
-            text (str): Texto bruto do e-mail.
-
-        Returns:
-            str: Texto limpo e lematizado.
         """
         text = re.sub(r'[^a-zA-Z\s]', '', text.lower())
         tokens = word_tokenize(text)
@@ -68,18 +80,6 @@ class ContentAnalyzer:
         """
         Classifica um texto de e-mail como 'Produtivo' ou 'Improdutivo'
         usando o modelo GPT da OpenAI.
-
-        A lógica é baseada em prompt engineering — o modelo responde apenas
-        com a palavra da categoria e o método valida a resposta.
-
-        Args:
-            text (str): Texto do e-mail a ser analisado.
-
-        Returns:
-            str: 'Produtivo' ou 'Improdutivo'.
-
-        Raises:
-            Exception: Quando ocorre falha na chamada à API.
         """
         prompt = f"""
         Analise o seguinte texto de um e-mail e classifique-o como 'Produtivo' ou 'Improdutivo'.
@@ -114,12 +114,6 @@ class ContentAnalyzer:
     def generate_response(self, category: str) -> str:
         """
         Gera uma resposta automática baseada na categoria classificada.
-
-        Args:
-            category (str): 'Produtivo' ou 'Improdutivo'.
-
-        Returns:
-            str: Texto de resposta padrão.
         """
         if category == 'Produtivo':
             return (
