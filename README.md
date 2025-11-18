@@ -1,4 +1,4 @@
-# EMAIL ANALYZER ⚡
+# EMAIL ANALYZER 📧
 
 A Full-Stack web application for automated email classification, developed as a technical challenge for AutoU. The app uses AI to categorize emails and suggest appropriate responses.
 
@@ -6,6 +6,7 @@ A Full-Stack web application for automated email classification, developed as a 
 
 ---
 
+<img width="1531" height="1263" alt="image" src="https://github.com/user-attachments/assets/d0af96e1-d558-4c8a-b0c5-0fabee07c792" />
 
 *Main dashboard showing the AI analysis result.*
 
