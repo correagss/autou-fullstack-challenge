@@ -6,10 +6,7 @@ from api.routers import home
 
 app = FastAPI(title="API de Análise de E-mails")
 
-origins = [
-    "http://localhost:5173",
-    
-]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
