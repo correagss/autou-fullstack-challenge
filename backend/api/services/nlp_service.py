@@ -84,20 +84,14 @@ class ContentAnalyzer:
         'Produtivo' significa que o e-mail requer uma ação ou resposta.
         'Improdutivo' significa que é um e-mail informativo, social ou que pode ser arquivado.
         Responda APENAS com a palavra 'Produtivo' ou 'Improdutivo'.
-
-        Texto do E-mail:
-        ---
-        {text}
-        ---
-        Classificação:
         """
 
         try:
             response = self.client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                    {"role": "system", "content": "Você é um assistente de classificação de e-mails."},
-                    {"role": "user", "content": prompt}
+                    {"role": "system", "content": prompt},
+                    {"role": "user", "content": text}
                 ],
                 temperature=0,
                 max_tokens=5
