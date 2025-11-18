@@ -1,7 +1,7 @@
 # backend/services/nlp_service.py
 import os
 import re
-import nltk 
+import nltk
 from dotenv import load_dotenv
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -9,6 +9,12 @@ from nltk.tokenize import word_tokenize
 from openai import OpenAI
 
 load_dotenv()
+
+
+# Isso garante que ele encontre os pacotes no ambiente de produção do Render.
+nltk.data.path.append('./nltk_data')
+# --- FIM DA NOVA CONFIGURAÇÃO ---
+
 
 class ContentAnalyzer:
     """
@@ -20,8 +26,7 @@ class ContentAnalyzer:
 
     def __init__(self):
         """
-        Inicializa cliente OpenAI e componentes do NLTK,
-        realizando o download dos pacotes NLTK se necessário.
+        Inicializa cliente OpenAI e componentes do NLTK.
         """
         OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
@@ -30,39 +35,21 @@ class ContentAnalyzer:
 
         self.client = OpenAI(api_key=OPENAI_API_KEY)
 
-        # --- LÓGICA DE AUTODOWNLOAD DO NLTK ---
+        # A lógica de download foi removida daqui e movida para o build.sh
+        # Agora, ele apenas tenta carregar os recursos, esperando que já existam.
         try:
-            # Tenta carregar os recursos. Se funcionar, ótimo.
             self.stop_words = set(stopwords.words('portuguese') + stopwords.words('english'))
             self.lemmatizer = WordNetLemmatizer()
-            # Testamos também o 'punkt' que é usado pelo word_tokenize
-            word_tokenize('test')
         except LookupError:
-            # Se falhar, significa que os pacotes não estão disponíveis.
-            print("!! Pacotes NLTK não encontrados. Baixando agora... !!")
-            # Baixa todos os pacotes necessários de uma vez.
-            nltk.download('stopwords')
-            nltk.download('punkt')
-            nltk.download('wordnet')
-            nltk.download('omw-1.4')
-            print("✅ Downloads do NLTK concluídos. Recarregando recursos...")
-            
-            # Tenta carregar novamente após o download
-            self.stop_words = set(stopwords.words('portuguese') + stopwords.words('english'))
-            self.lemmatizer = WordNetLemmatizer()
-        # --- FIM DA LÓGICA DE AUTODOWNLOAD ---
+            # Este erro não deve mais acontecer no Render, mas é uma boa salvaguarda.
+            raise RuntimeError("Recursos do NLTK não foram encontrados. O script de build pode ter falhado.")
 
     # -------------------------------------------------------------------------
     # PRÉ-PROCESSAMENTO
     # -------------------------------------------------------------------------
     def preprocess_text(self, text: str) -> str:
         """
-        Realiza pré-processamento básico do texto:
-        - Converte para minúsculas
-        - Remove caracteres especiais
-        - Tokeniza
-        - Remove stop words
-        - Lematiza tokens
+        Realiza pré-processamento básico do texto.
         """
         text = re.sub(r'[^a-zA-Z\s]', '', text.lower())
         tokens = word_tokenize(text)
